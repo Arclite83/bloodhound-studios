@@ -346,6 +346,37 @@ function checkConsistency() {
   }
 }
 
+/* The trader address has to appear in the EULA (Apple's minimum terms require
+ * the developer's name and address there), on the studio landing page, and in
+ * the privacy policy as the controller's identity. It has to be the same
+ * address in all three. */
+
+const ADDRESS_LINES = ['565 Pleasant St', 'Southington, CT 06489', 'United States'];
+const ADDRESS_PAGES = ['index.html', 'gridinfect/terms.html', 'gridinfect/privacy.html'];
+
+function checkTraderAddress() {
+  for (const rel of ADDRESS_PAGES) {
+    const src = stripComments(read(rel)).replace(/\s+/g, ' ');
+    for (const line of ADDRESS_LINES) {
+      if (!src.includes(line)) fail(rel, `trader address is missing the line "${line}"`);
+    }
+  }
+  /* A street number anywhere else on the site means a second address crept in. */
+  for (const rel of pages) {
+    if (ADDRESS_PAGES.includes(rel)) continue;
+    const src = stripComments(read(rel)).replace(/\s+/g, ' ');
+    if (/\bPleasant St\b|\bSouthington\b/.test(src)) {
+      fail(rel, 'carries the trader address; it belongs only on the landing page, the EULA and the privacy policy');
+    }
+  }
+  /* The EULA names a governing law. A jurisdiction-neutral fallback is fine to
+   * ship but should not come back silently once one has been chosen. */
+  const terms = stripComments(read('gridinfect/terms.html')).replace(/\s+/g, ' ');
+  if (!/governed by the law of the State of Connecticut/.test(terms)) {
+    fail('gridinfect/terms.html', 'clause 11 no longer names Connecticut as the governing law');
+  }
+}
+
 /* ----------------------------------------- 9. licence text reproduction */
 
 /* Apache-2.0 and OFL 1.1 both require the licence text to travel with the
@@ -406,6 +437,7 @@ const checks = [
   ['counts', checkCounts],
   ['metadata', checkMetadata],
   ['consistency', checkConsistency],
+  ['trader address', checkTraderAddress],
   ['licence text', checkLicenceText],
 ];
 
