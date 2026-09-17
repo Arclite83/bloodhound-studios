@@ -15,7 +15,7 @@ the content through Jekyll.
 /gridinfect/suitability.html   age suitability
 /gridinfect/notices.html       third-party licence notices
 /tools/check.js                pre-merge checks, plain Node, no dependencies
-/OPEN-QUESTIONS.md             decisions still waiting on a value
+/OPEN-QUESTIONS.md             decision record for these pages
 ```
 
 The per-title subfolders are load-bearing: store consoles hold direct links
@@ -52,8 +52,10 @@ game, that page metadata is present, that the legal pages agree with each other,
 and that `notices.html` still reproduces the Apache 2.0, MIT and OFL 1.1 texts in
 full rather than naming them.
 
-Making a red run block the merge needs a branch ruleset, which is a repository
-setting rather than a file. See `OPEN-QUESTIONS.md`.
+The check reports but does not block: there is deliberately no branch ruleset
+requiring it, so a red run will not stop a merge or a direct push to `main`.
+Read the run before you push a policy change. `OPEN-QUESTIONS.md` records that
+decision and the rest of them.
 
 ## Editing
 

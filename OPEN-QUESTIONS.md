@@ -1,34 +1,19 @@
-# Open questions — Grid Infect legal and support pages
+# Decisions — Grid Infect legal and support pages
 
-One item left, and it is a repository setting rather than a file. Everything
-else in the audit is resolved and on the page. No placeholder text exists on any
-live page, and `tools/check.js` fails the build if one appears.
+Nothing is open. This file is kept as the decision record for the Grid Infect
+legal and support pages, so a later edit can see what was chosen and why rather
+than re-deciding it. No placeholder text exists on any live page, and
+`tools/check.js` fails the build if one appears.
 
----
+## Decisions taken
 
-## 1. Make a failing check actually block the merge
-
-**Where:** repository settings — not a file, so I could not do it.
-
-`.github/workflows/check.yml` runs `tools/check.js` on every push and on every
-pull request into `main`, and reports a status check named **`check`**. Reporting
-is not blocking. To block:
-
-> Settings → Rules → Rulesets → New branch ruleset → target `main` →
-> enable **Require status checks to pass** → add **`check`** →
-> enable **Require a pull request before merging**.
-
-Do this after this PR's first run, so the check name is available in the picker.
-
-**Decision needed:** none, unless you would rather not require a PR to push to
-`main` on a repo you are the only committer on. If so, enable the status-check
-rule alone and leave the pull-request requirement off — the check still blocks a
-direct push that fails.
-
----
-
-## Resolved
-
+- **Required status check on `main`.** Declined. `tools/check.js` runs in CI on
+  every push and every pull request and reports a status check named `check`,
+  but no branch ruleset requires it, so a red run reports without blocking.
+  On a single-committer repo that is a deliberate trade: no ceremony to push,
+  and the cost is that nothing stops a failing commit reaching `main` and
+  publishing. If that ever bites, the rule is Settings -> Rules -> Rulesets ->
+  target `main` -> Require status checks to pass -> add `check`.
 - **Developer legal name.** Christopher Mahar, trading as Bloodhound Studios.
   Published in the EULA Contact section beside the address, which is what
   Apple's Minimum Terms ask for. The landing page and the privacy policy carry
