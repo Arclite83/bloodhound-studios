@@ -1,44 +1,12 @@
 # Open questions — Grid Infect legal and support pages
 
-Two items left. Everything else in the audit is resolved and on the page. No
-placeholder text exists on any live page, and `tools/check.js` fails the build
-if one appears.
+One item left, and it is a repository setting rather than a file. Everything
+else in the audit is resolved and on the page. No placeholder text exists on any
+live page, and `tools/check.js` fails the build if one appears.
 
 ---
 
-## 1. Legal name for the EULA — outstanding
-
-**Where:** `gridinfect/terms.html`, Contact section.
-
-Chris confirmed that "Bloodhound Studios" is a trading name over his personal
-legal name, not a registered entity. Apple's Minimum Terms want the legal name
-alongside the address, so the Contact block needs one line changed.
-
-**What shipped in the meantime.** The address is published and correct:
-
-```html
-<p><strong>Bloodhound Studios</strong><br>
-565 Pleasant St<br>
-Southington, CT 06489<br>
-United States<br>
-<a href="mailto:bloodhoundstudios@gmail.com">bloodhoundstudios@gmail.com</a></p>
-```
-
-**Decision needed:** the personal legal name. One line changes, in
-`gridinfect/terms.html` only — the landing page and the privacy policy carry the
-studio name and are fine as they are:
-
-```html
-<p><strong>FULL-LEGAL-NAME-HERE</strong>, trading as Bloodhound Studios<br>
-```
-
-Whether Apple would reject the EULA over a DBA without the personal name behind
-it is not certain — plenty of shipped apps name only the studio. It is a
-one-line fix either way, so it is worth closing rather than arguing.
-
----
-
-## 2. Make a failing check actually block the merge
+## 1. Make a failing check actually block the merge
 
 **Where:** repository settings — not a file, so I could not do it.
 
@@ -61,6 +29,11 @@ direct push that fails.
 
 ## Resolved
 
+- **Developer legal name.** Christopher Mahar, trading as Bloodhound Studios.
+  Published in the EULA Contact section beside the address, which is what
+  Apple's Minimum Terms ask for. The landing page and the privacy policy carry
+  the studio name alone, which is correct for those surfaces. The check fails if
+  the legal name is dropped from the EULA.
 - **Governing law and forum.** Connecticut. `terms.html` clause 11 now names the
   law of the State of Connecticut and gives the state and federal courts in
   Connecticut non-exclusive jurisdiction, without displacing a consumer's local

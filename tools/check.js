@@ -369,6 +369,13 @@ function checkTraderAddress() {
       fail(rel, 'carries the trader address; it belongs only on the landing page, the EULA and the privacy policy');
     }
   }
+  /* Apple's Minimum Terms want the developer's legal name beside the address.
+   * "Bloodhound Studios" is a trading name, so the EULA carries both. */
+  const eula = stripComments(read('gridinfect/terms.html')).replace(/\s+/g, ' ');
+  if (!/Christopher Mahar<\/strong>, trading as Bloodhound Studios/.test(eula)) {
+    fail('gridinfect/terms.html', 'Contact section no longer names the developer\'s legal name beside the trading name');
+  }
+
   /* The EULA names a governing law. A jurisdiction-neutral fallback is fine to
    * ship but should not come back silently once one has been chosen. */
   const terms = stripComments(read('gridinfect/terms.html')).replace(/\s+/g, ' ');
