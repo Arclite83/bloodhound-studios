@@ -1,0 +1,40 @@
+name: site checks
+
+# These pages are live compliance URLs in the Google Play Console, App Store
+# Connect and the AdMob console. This job is what stops a bad edit reaching
+# them. It runs on every push and every pull request into main.
+#
+# To make a red run actually block merging, add a branch protection rule or
+# ruleset on `main` that requires the status check named "check" (Settings ->
+# Rules -> Rulesets, or Settings -> Branches). The workflow alone reports;
+# the rule is what enforces.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # No dependencies to install. If this ever needs `npm ci`, something has
+      # gone wrong with the no-build-step rule.
+      - name: Run site checks
+        run: node tools/check.js

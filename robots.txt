@@ -1,0 +1,19 @@
+# Bloodhound Studios public site.
+#
+# Decision: these pages are indexable. They are the published privacy policy,
+# EULA, age suitability statement, support page and third-party notices for a
+# shipped app. Google Play requires the privacy policy to be publicly
+# reachable, and a user who searches for the app and its policy should find
+# it. Nothing here is private, and there is nothing to keep out of an index.
+#
+# Caveat, deliberately recorded: this site is a GitHub *project* Pages site at
+# https://arclite83.github.io/bloodhound-studios/. Crawlers only read
+# robots.txt from the domain root, https://arclite83.github.io/robots.txt,
+# which is served by the arclite83.github.io user-site repository and not by
+# this one. This file therefore has no effect until the site moves to a domain
+# root or a custom domain. The per-page <meta name="robots" content="index,
+# follow"> tag is what actually controls indexing today; this file states the
+# same intent so the two never disagree.
+
+User-agent: *
+Allow: /
