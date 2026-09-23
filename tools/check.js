@@ -351,7 +351,7 @@ function checkConsistency() {
  * the privacy policy as the controller's identity. It has to be the same
  * address in all three. */
 
-const ADDRESS_LINES = ['565 Pleasant St', 'Southington, CT 06489', 'United States'];
+const ADDRESS_LINES = ['1656 Meriden-Waterbury Turnpike', 'Unit #2124', 'Milldale, CT 06467', 'United States'];
 const ADDRESS_PAGES = ['index.html', 'gridinfect/terms.html', 'gridinfect/privacy.html'];
 
 function checkTraderAddress() {
@@ -361,11 +361,12 @@ function checkTraderAddress() {
       if (!src.includes(line)) fail(rel, `trader address is missing the line "${line}"`);
     }
   }
-  /* A street number anywhere else on the site means a second address crept in. */
+  /* A street number anywhere else on the site means a second address crept in.
+   * The retired Southington address stays in the pattern so a stale copy fails. */
   for (const rel of pages) {
     if (ADDRESS_PAGES.includes(rel)) continue;
     const src = stripComments(read(rel)).replace(/\s+/g, ' ');
-    if (/\bPleasant St\b|\bSouthington\b/.test(src)) {
+    if (/\bMeriden-Waterbury\b|\bMilldale\b|\bPleasant St\b|\bSouthington\b/.test(src)) {
       fail(rel, 'carries the trader address; it belongs only on the landing page, the EULA and the privacy policy');
     }
   }

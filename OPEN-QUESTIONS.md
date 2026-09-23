@@ -25,7 +25,9 @@ than re-deciding it. No placeholder text exists on any live page, and
   protections. Connecticut abolished county government in 1960 and organises its
   courts by judicial district, so naming the state rather than a county is the
   correct form. `tools/check.js` fails if clause 11 reverts.
-- **Trader address.** 565 Pleasant St, Southington, CT 06489, United States.
+- **Trader address.** 1656 Meriden-Waterbury Turnpike, Unit #2124, Milldale,
+  CT 06467, United States. A mailbox unit, not a residence, so it is safe on
+  indexed pages; it replaced 565 Pleasant St, Southington on 23 September 2026.
   Published in three places: the EULA Contact section (Apple's minimum terms),
   the studio landing page (imprint, and the same details the store listings
   show), and the privacy policy as the controller's identity (GDPR Art. 13). The
