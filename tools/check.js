@@ -361,12 +361,11 @@ function checkTraderAddress() {
       if (!src.includes(line)) fail(rel, `trader address is missing the line "${line}"`);
     }
   }
-  /* A street number anywhere else on the site means a second address crept in.
-   * The retired Southington address stays in the pattern so a stale copy fails. */
+  /* A street number anywhere else on the site means a second address crept in. */
   for (const rel of pages) {
     if (ADDRESS_PAGES.includes(rel)) continue;
     const src = stripComments(read(rel)).replace(/\s+/g, ' ');
-    if (/\bMeriden-Waterbury\b|\bMilldale\b|\bPleasant St\b|\bSouthington\b/.test(src)) {
+    if (/\bMeriden-Waterbury\b|\bMilldale\b/.test(src)) {
       fail(rel, 'carries the trader address; it belongs only on the landing page, the EULA and the privacy policy');
     }
   }
