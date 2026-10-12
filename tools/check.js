@@ -22,6 +22,15 @@ const ROOT = path.resolve(__dirname, '..');
  * the pages carry this prefix; it maps back to the repository root on disk. */
 const SITE_BASE = '/bloodhound-studios';
 
+/* One entry per title. `dir` is the title's subfolder, `name` is how every
+ * one of its pages must write the game's name, and `misspelt` catches the
+ * spellings it must never take. Adding a title means a row here plus its
+ * paths in FROZEN and SIBLINGS below. */
+const TITLES = [
+  { dir: 'gridinfect', name: 'Grid Infect', misspelt: /\bGridInfect\b|\bGrid-Infect\b/ },
+  { dir: 'cryptogramjam', name: 'Cryptogram Jam', misspelt: /\bCryptogramJam\b|\bCryptogram-Jam\b/ },
+];
+
 /* Paths already entered into store consoles. Renaming or moving any of these
  * turns a live listing link into a 404. They are frozen. */
 const FROZEN = [
@@ -30,6 +39,11 @@ const FROZEN = [
   'gridinfect/terms.html',
   'gridinfect/suitability.html',
   'gridinfect/notices.html',
+  'cryptogramjam/index.html',
+  'cryptogramjam/privacy.html',
+  'cryptogramjam/terms.html',
+  'cryptogramjam/suitability.html',
+  'cryptogramjam/notices.html',
 ];
 
 const failures = [];
@@ -210,16 +224,41 @@ function checkInternalLinks() {
 
 /* ------------------------------------------------ 5. link graph completeness */
 
-const SIBLINGS = [
-  'gridinfect/index.html',
-  'gridinfect/privacy.html',
-  'gridinfect/terms.html',
-  'gridinfect/suitability.html',
-  'gridinfect/notices.html',
-];
+/* Each title's pages, which must all link one another and the root. Keyed by
+ * the title's `dir` in TITLES. */
+const SIBLINGS = {
+  gridinfect: [
+    'gridinfect/index.html',
+    'gridinfect/privacy.html',
+    'gridinfect/terms.html',
+    'gridinfect/suitability.html',
+    'gridinfect/notices.html',
+  ],
+  cryptogramjam: [
+    'cryptogramjam/index.html',
+    'cryptogramjam/privacy.html',
+    'cryptogramjam/terms.html',
+    'cryptogramjam/suitability.html',
+    'cryptogramjam/notices.html',
+  ],
+};
 
 function checkLinkGraph() {
-  for (const rel of SIBLINGS) {
+  for (const title of TITLES) {
+    if (!SIBLINGS[title.dir]) fail('tools/check.js', `title ${title.dir} has no SIBLINGS entry`);
+  }
+  for (const group of Object.values(SIBLINGS)) checkSiblingGroup(group);
+
+  const rootSrc = stripComments(read('index.html'));
+  for (const sib of Object.values(SIBLINGS).flat()) {
+    if (!rootSrc.includes(sib)) {
+      fail('index.html', `site root does not list ${sib}`);
+    }
+  }
+}
+
+function checkSiblingGroup(group) {
+  for (const rel of group) {
     if (!fs.existsSync(path.join(ROOT, rel))) continue;
     const src = stripComments(read(rel));
     const linked = new Set(
@@ -229,18 +268,11 @@ function checkLinkGraph() {
         .map((h) => resolveInternal(rel, h))
     );
 
-    for (const sib of SIBLINGS) {
+    for (const sib of group) {
       if (sib === rel) continue;
       if (!linked.has(sib)) fail(rel, `does not link to its sibling ${sib}`);
     }
     if (!linked.has('index.html')) fail(rel, 'does not link back to the site root');
-  }
-
-  const rootSrc = stripComments(read('index.html'));
-  for (const sib of SIBLINGS) {
-    if (!rootSrc.includes(sib.replace('gridinfect/', 'gridinfect/'))) {
-      fail('index.html', `site root does not list ${sib}`);
-    }
   }
 }
 
@@ -303,12 +335,18 @@ function checkMetadata() {
 /* -------------------------------------------- 8. cross-page consistency */
 
 function checkConsistency() {
-  const APP_PAGES = SIBLINGS;
+  for (const title of TITLES) checkTitleConsistency(title);
+}
+
+function checkTitleConsistency(title) {
+  const APP_PAGES = SIBLINGS[title.dir] || [];
+  const privacyRel = `${title.dir}/privacy.html`;
+  const suitabilityRel = `${title.dir}/suitability.html`;
   for (const rel of APP_PAGES) {
     const src = stripComments(read(rel)).replace(/\s+/g, ' ');
-    if (!src.includes('Grid Infect')) fail(rel, 'does not name the app');
-    if (/\bGridInfect\b|\bGrid-Infect\b/.test(src)) {
-      fail(rel, 'writes the game name wrong; it is "Grid Infect", two words');
+    if (!src.includes(title.name)) fail(rel, 'does not name the app');
+    if (title.misspelt.test(src)) {
+      fail(rel, `writes the game name wrong; it is "${title.name}", two words`);
     }
     if (/\bBloodhound Studio\b(?!s)/.test(src)) {
       fail(rel, 'writes the studio name wrong; it is "Bloodhound Studios"');
@@ -317,18 +355,18 @@ function checkConsistency() {
   }
 
   /* Play requires the policy to name the app it covers. */
-  const privacy = read('gridinfect/privacy.html');
+  const privacy = read(privacyRel);
   if (!privacy.includes('com.bloodhoundstudios.')) {
-    fail('gridinfect/privacy.html', 'does not name the Android package id');
+    fail(privacyRel, 'does not name the Android package id');
   }
   if (!/\bshares?\b/i.test(privacy)) {
-    fail('gridinfect/privacy.html', 'does not say what is shared, only what is collected');
+    fail(privacyRel, 'does not say what is shared, only what is collected');
   }
 
   /* Privacy and suitability must not disagree about the child-directed
    * question. Both have to say the app is not directed at under-13s. */
   const notDirected = /not directed at children under 13/i;
-  for (const rel of ['gridinfect/privacy.html', 'gridinfect/suitability.html']) {
+  for (const rel of [privacyRel, suitabilityRel]) {
     if (!notDirected.test(read(rel))) {
       fail(rel, 'does not state that the app is not directed at children under 13');
     }
@@ -342,7 +380,7 @@ function checkConsistency() {
   }
   const distinct = new Set(dates.values());
   if (distinct.size > 1) {
-    fail('dates', `effective dates disagree: ${[...dates].map(([k, v]) => `${k}=${v}`).join(', ')}`);
+    fail(`dates (${title.dir})`, `effective dates disagree: ${[...dates].map(([k, v]) => `${k}=${v}`).join(', ')}`);
   }
 }
 
@@ -352,7 +390,10 @@ function checkConsistency() {
  * address in all three. */
 
 const ADDRESS_LINES = ['1656 Meriden-Waterbury Turnpike', 'Unit #2124', 'Milldale, CT 06467', 'United States'];
-const ADDRESS_PAGES = ['index.html', 'gridinfect/terms.html', 'gridinfect/privacy.html'];
+const ADDRESS_PAGES = [
+  'index.html',
+  ...TITLES.flatMap((t) => [`${t.dir}/terms.html`, `${t.dir}/privacy.html`]),
+];
 
 function checkTraderAddress() {
   for (const rel of ADDRESS_PAGES) {
@@ -369,18 +410,21 @@ function checkTraderAddress() {
       fail(rel, 'carries the trader address; it belongs only on the landing page, the EULA and the privacy policy');
     }
   }
-  /* Apple's Minimum Terms want the developer's legal name beside the address.
-   * "Bloodhound Studios" is a trading name, so the EULA carries both. */
-  const eula = stripComments(read('gridinfect/terms.html')).replace(/\s+/g, ' ');
-  if (!/Christopher Mahar<\/strong>, trading as Bloodhound Studios/.test(eula)) {
-    fail('gridinfect/terms.html', 'Contact section no longer names the developer\'s legal name beside the trading name');
-  }
+  for (const title of TITLES) {
+    const termsRel = `${title.dir}/terms.html`;
+    const terms = stripComments(read(termsRel)).replace(/\s+/g, ' ');
 
-  /* The EULA names a governing law. A jurisdiction-neutral fallback is fine to
-   * ship but should not come back silently once one has been chosen. */
-  const terms = stripComments(read('gridinfect/terms.html')).replace(/\s+/g, ' ');
-  if (!/governed by the law of the State of Connecticut/.test(terms)) {
-    fail('gridinfect/terms.html', 'clause 11 no longer names Connecticut as the governing law');
+    /* Apple's Minimum Terms want the developer's legal name beside the address.
+     * "Bloodhound Studios" is a trading name, so the EULA carries both. */
+    if (!/Christopher Mahar<\/strong>, trading as Bloodhound Studios/.test(terms)) {
+      fail(termsRel, 'Contact section no longer names the developer\'s legal name beside the trading name');
+    }
+
+    /* The EULA names a governing law. A jurisdiction-neutral fallback is fine to
+     * ship but should not come back silently once one has been chosen. */
+    if (!/governed by the law of the State of Connecticut/.test(terms)) {
+      fail(termsRel, 'clause 11 no longer names Connecticut as the governing law');
+    }
   }
 }
 
@@ -414,7 +458,10 @@ const LICENCE_MARKERS = {
 };
 
 function checkLicenceText() {
-  const rel = 'gridinfect/notices.html';
+  for (const title of TITLES) checkNoticesPage(`${title.dir}/notices.html`);
+}
+
+function checkNoticesPage(rel) {
   if (!fs.existsSync(path.join(ROOT, rel))) return;
   const src = read(rel).replace(/\s+/g, ' ');
   for (const [licence, markers] of Object.entries(LICENCE_MARKERS)) {
