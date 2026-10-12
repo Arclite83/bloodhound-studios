@@ -14,14 +14,19 @@ the content through Jekyll.
 /gridinfect/terms.html         EULA
 /gridinfect/suitability.html   age suitability
 /gridinfect/notices.html       third-party licence notices
+/cryptogramjam/index.html      Cryptogram Jam — game and support page
+/cryptogramjam/privacy.html    privacy policy
+/cryptogramjam/terms.html      EULA
+/cryptogramjam/suitability.html  age suitability
+/cryptogramjam/notices.html    third-party licence notices
 /tools/check.js                pre-merge checks, plain Node, no dependencies
 /OPEN-QUESTIONS.md             decision record for these pages
 ```
 
 The per-title subfolders are load-bearing: store consoles hold direct links
 into them. Do not flatten them and do not rename a file once it has been
-submitted to a console. `tools/check.js` fails if one of the five Grid Infect
-paths moves.
+submitted to a console. `tools/check.js` fails if one of the five pages of any
+title moves.
 
 ## Rules these pages hold to
 
@@ -44,12 +49,12 @@ node tools/check.js
 ```
 
 Runs in CI on every push and every pull request into `main`
-(`.github/workflows/check.yml`, status check name `check`). It asserts the five
+(`.github/workflows/check.yml`, status check name `check`). It asserts the
 frozen paths exist, that no page carries a placeholder, that nothing off-origin
 is fetched, that every internal link and fragment resolves, that each page links
-its siblings and the root, that the level and world counts match the shipped
-game, that page metadata is present, that the legal pages agree with each other,
-and that `notices.html` still reproduces the Apache 2.0, MIT and OFL 1.1 texts in
+its siblings and the root, that Grid Infect's level and world counts match the
+shipped game, that page metadata is present, that each title's legal pages agree
+with each other, and that each title's `notices.html` still reproduces the Apache 2.0, MIT and OFL 1.1 texts in
 full rather than naming them.
 
 The check reports but does not block: there is deliberately no branch ruleset
@@ -63,11 +68,13 @@ decision and the rest of them.
 It has to outlive the projects it documents.
 
 Adding a title: copy the `gridinfect/` folder, replace the content, add a link
-from `/index.html`, and extend the `FROZEN` and `SIBLINGS` lists in
-`tools/check.js`.
+from `/index.html` (the title entry and its five pages in the footer), and in
+`tools/check.js` add a row to `TITLES` and extend the `FROZEN` and `SIBLINGS`
+lists. The per-title checks (package id, effective dates, address, legal name,
+governing law, licence texts) then run for the new title too.
 
 Amending a policy: change the effective date in the same commit. The check
-requires the effective dates on the Grid Infect legal pages to agree, so they
+requires the effective dates on each title's legal pages to agree, so they
 move together.
 
 Contact: bloodhoundstudios@gmail.com
